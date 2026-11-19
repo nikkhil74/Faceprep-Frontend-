@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Password Strength Checker</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .password-card {
+      background: #ffffff;
+      padding: 28px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 360px;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #222;
+    }
+
+    .input-group {
+      margin-bottom: 10px;
+    }
+
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      font-size: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #4a90e2;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 16px;
+      cursor: pointer;
+    }
+
+    /* Strength Bar */
+    .strength-meter {
+      height: 8px;
+      width: 100%;
+      background-color: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+
+    .strength-fill {
+      height: 100%;
+      width: 0%;
+      transition: width 0.25s ease, background-color 0.25s ease;
+    }
+
+    /* Text Label */
+    .strength-label {
+      font-size: 13px;
+      font-weight: 600;
+      height: 18px; /* Keeps layout stable when empty */
+      margin-bottom: 14px;
+    }
+
+    /* Rules Checklist */
+    .rules-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 14px;
+    }
+
+    .rules-list li {
+      color: #777;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: color 0.2s ease;
+    }
+
+    .rules-list li::before {
+      content: "○";
+      font-weight: bold;
+    }
+
+    .rules-list li.valid {
+      color: #28a745;
+    }
+
+    .rules-list li.valid::before {
+      content: "✔";
+    }
+  </style>
+</head>
+<body>
+
+<div class="password-card">
+  <h2>Password Strength</h2>
+
+  <!-- Password Box -->
+  <div class="input-group">
+    <input type="password" id="passwordInput" placeholder="Enter your password">
+  </div>
+
+  <!-- Show Password Checkbox -->
+  <label class="checkbox-group">
+    <input type="checkbox" id="togglePassword"> Show password
+  </label>
+
+  <!-- Strength Bar -->
+  <div class="strength-meter">
+    <div class="strength-fill" id="strengthFill"></div>
+  </div>
+
+  <!-- Strength Label -->
+  <div class="strength-label" id="strengthLabel"></div>
+
+  <!-- Five Rules Checklist -->
+  <ul class="rules-list">
+    <li id="rule-length">At least 8 characters</li>
+    <li id="rule-upper">One uppercase letter</li>
+    <li id="rule-lower">One lowercase letter</li>
+    <li id="rule-number">One number</li>
+    <li id="rule-special">One special symbol</li>
+  </ul>
+</div>
+
+<script>
+  const passwordInput = document.getElementById("passwordInput");
+  const togglePassword = document.getElementById("togglePassword");
+  const strengthFill = document.getElementById("strengthFill");
+  const strengthLabel = document.getElementById("strengthLabel");
+
+  const rules = {
+    length: document.getElementById("rule-length"),
+    upper: document.getElementById("rule-upper"),
+    lower: document.getElementById("rule-lower"),
+    number: document.getElementById("rule-number"),
+    special: document.getElementById("rule-special")
+  };
+
+  // Toggle between "password" and "text"
+  togglePassword.addEventListener("change", () => {
+    passwordInput.type = togglePassword.checked ? "text" : "password";
+  });
+
+  // Evaluate password on every keystroke
+  passwordInput.addEventListener("input", () => {
+    const val = passwordInput.value;
+
+    // Check individual conditions
+    const checks = {
+      length: val.length >= 8,
+      upper: /[A-Z]/.test(val),
+      lower: /[a-z]/.test(val),
+      number: /[0-9]/.test(val),
+      special: /[^A-Za-z0-9]/.test(val)
+    };
+
+    // Update checklist UI and count passed rules
+    let passedCount = 0;
+    for (const key in checks) {
+      if (checks[key]) {
+        rules[key].classList.add("valid");
+        passedCount++;
+      } else {
+        rules[key].classList.remove("valid");
+      }
+    }
+
+    // Update strength bar and text label
+    if (val.length === 0) {
+      strengthFill.style.width = "0%";
+      strengthLabel.textContent = "";
+    } else {
+      // Fill bar proportionally (20% per rule)
+      strengthFill.style.width = `${(passedCount / 5) * 100}%`;
+
+      if (passedCount <= 2) {
+        strengthFill.style.backgroundColor = "#dc3545"; // Red
+        strengthLabel.style.color = "#dc3545";
+        strengthLabel.textContent = "Weak";
+      } else if (passedCount <= 4) {
+        strengthFill.style.backgroundColor = "#fd7e14"; // Orange
+        strengthLabel.style.color = "#fd7e14";
+        strengthLabel.textContent = "Medium";
+      } else {
+        strengthFill.style.backgroundColor = "#28a745"; // Green
+        strengthLabel.style.color = "#28a745";
+        strengthLabel.textContent = "Strong";
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
